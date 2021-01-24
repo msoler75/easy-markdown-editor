@@ -762,11 +762,11 @@ function cleanBlock(editor) {
 /**
  * Action for drawing a link.
  */
-function drawLink(editor) {
+function drawLink(editor, u) {
     var cm = editor.codemirror;
     var stat = getState(cm);
     var options = editor.options;
-    var url = 'https://';
+    var url = u || 'https://';
     if (options.promptURLs) {
         url = prompt(options.promptTexts.link, 'https://');
         if (!url) {
@@ -779,11 +779,11 @@ function drawLink(editor) {
 /**
  * Action for drawing an img.
  */
-function drawImage(editor) {
+function drawImage(editor, u) {
     var cm = editor.codemirror;
     var stat = getState(cm);
     var options = editor.options;
-    var url = 'https://';
+    var url = u || 'https://';
     if (options.promptURLs) {
         url = prompt(options.promptTexts.image, 'https://');
         if (!url) {
@@ -1570,17 +1570,17 @@ var insertTexts = {
     image: ['![](', '#url#)'],
     uploadedImage: ['![](#url#)', ''],
     // uploadedImage: ['![](#url#)\n', ''], // TODO: New line insertion doesn't work here.
-    table: ['', '\n\n| Column 1 | Column 2 | Column 3 |\n| -------- | -------- | -------- |\n| Text     | Text     | Text     |\n\n'],
+    table: ['', '\n\n| Columna 1 | Columna 2 | Columna 3 |\n| -------- | -------- | -------- |\n| Texto     | Texto     | Texto     |\n\n'],
     horizontalRule: ['', '\n\n-----\n\n'],
 };
 
 var promptTexts = {
-    link: 'URL for the link:',
-    image: 'URL of the image:',
+    link: 'URL del enlace:',
+    image: 'URL de la imagen:',
 };
 
 var timeFormat = {
-    locale: 'en-US',
+    locale: 'es-ES',
     format: {
         hour: '2-digit',
         minute: '2-digit',
@@ -1704,7 +1704,65 @@ function EasyMDE(options) {
     if (!options.previewRender) {
         options.previewRender = function (plainText) {
             // Note: "this" refers to the options object
-            return this.parent.markdown(plainText);
+            var text =  this.parent.markdown(plainText);
+
+            var lt = '&lt;-',
+            gt = '-&gt;';
+          var ralign = new RegExp(
+            /<(p|br)>(-&gt;|&lt;-)(.*?)(-&gt;|&lt;-)(:.*?)?</m
+          );
+          //ralign.exec(lt+gt);
+         
+          var m;
+          while ((m = ralign.exec(text))) {
+            var cls = [];
+            if (m[2] == lt && m[4] == lt) cls.push('align-left');
+            else if (m[2] == lt && m[4] == gt)
+              cls.push('align-justify');
+            else if (m[2] == gt && m[4] == lt)
+              cls.push('align-center');
+            else cls.push('align-right');
+            text = text.replace(
+              m[0],
+              (m[1] == 'p' ? '<p' : '<br><p') +
+                ' class=\'' +
+                cls.join(' ') +
+                '\'>' +
+                m[3] +
+                '<'
+            );
+          }
+          var regimg = new RegExp(
+            /<img src=["']([^{]+?)\{([^}]*?)\}["']([^>]*)>/m
+          );
+          while ((m = regimg.exec(text))) {
+            var url = m[1];
+            var parts = m[2].split(';');
+            var alt = m[3];
+            var cl2 = [];
+            var styles = [];
+            for (var i in parts) {
+                var part = parts[i];
+              if (part.indexOf(':') === -1) cl2.push(part);
+              else styles.push(part);
+            }
+            text = text.replace(
+              m[0],
+              '<img src="' +
+                url +
+                '"' +
+                (styles.length
+                  ? ' style="' + styles.join(';') + '"'
+                  : '') +
+                (cl2.length
+                  ? ' class="' + cl2.join(' ') + '"'
+                  : '') +
+                alt +
+                '>'
+            );
+          }
+                      return text;
+
         };
     }
 
@@ -1973,7 +2031,7 @@ EasyMDE.prototype.render = function (el) {
         if (options.shortcuts[key] !== null && bindings[key] !== null) {
             (function (key) {
                 keyMaps[fixShortcut(options.shortcuts[key])] = function () {
-                    var action = bindings[key];
+                    var action = bindings[key] || /* Pigmalion */ EasyMDE[key];
                     if (typeof action === 'function') {
                         action(self);
                     } else if (typeof action === 'string') {
