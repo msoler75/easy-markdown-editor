@@ -1,5 +1,12 @@
 # EasyMDE - Markdown Editor
 
+##DISCLAIMER: 
+
+(Marcel: I just adapted this project from original easy-markdown-editor and added some features)
+
+
+
+
 [![npm version](https://img.shields.io/npm/v/easymde.svg?style=for-the-badge)](https://www.npmjs.com/package/easymde)
 [![npm version](https://img.shields.io/npm/v/easymde/next.svg?style=for-the-badge)](https://www.npmjs.com/package/easymde/v/next)
 [![Build Status](https://img.shields.io/travis/Ionaru/easy-markdown-editor/master.svg?style=for-the-badge)](https://travis-ci.org/Ionaru/easy-markdown-editor)
