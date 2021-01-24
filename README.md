@@ -1,9 +1,10 @@
 # EasyMDE - Markdown Editor
 
-##DISCLAIMER: 
+## DISCLAIMER
 
 (Marcel: I just adapted this project from original easy-markdown-editor and added some features)
 
+-----
 
 
 
