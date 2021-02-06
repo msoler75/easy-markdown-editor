@@ -1774,6 +1774,7 @@ function EasyMDE(options) {
     if (!options.previewRender) {
         options.previewRender = function (plainText) {
             // Note: "this" refers to the options object
+            plainText = plainText.replace(/(!\[[^\]]*\]\([^{)]+){([^})]*)}(.*)\)/g, function(matched, url, props) {return url + '%7B' + props.replace(/%/g, '%25').replace(/:/g, '%3A').replace(/ /g, '%20') + '%7D' + ')';});
             var text =  this.parent.markdown(plainText);
 
             var lt = '&lt;-',
@@ -1782,7 +1783,7 @@ function EasyMDE(options) {
             /<(p|br)>(-&gt;|&lt;-)(.*?)(-&gt;|&lt;-)(:.*?)?</m
           );
           //ralign.exec(lt+gt);
-         
+         // Pigmalión:
           var m;
           while ((m = ralign.exec(text))) {
             var cls = [];
@@ -1802,12 +1803,17 @@ function EasyMDE(options) {
                 '<'
             );
           }
+          text = text.replace(/%7B/g, '{').replace(/%7D/g, '}');
           var regimg = new RegExp(
-            /<img src=["']([^{]+?)\{([^}]*?)\}["']([^>]*)>/m
+            /<img src=["']([^{]+?){([^}]*?)}["']([^>]*)>/m
           );
           while ((m = regimg.exec(text))) {
             var url = m[1];
-            var parts = m[2].split(';');
+            var parts = m[2]
+            .replace(/%3A/g,':')
+            .replace(/%20/g, ' ')
+            .replace(/%25/g, '%')            
+            .split(';');
             var alt = m[3];
             var cl2 = [];
             var styles = [];
