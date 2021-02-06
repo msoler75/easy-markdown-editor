@@ -43,6 +43,8 @@ var bindings = {
     'redo': redo,
     'toggleSideBySide': toggleSideBySide,
     'toggleFullScreen': toggleFullScreen,
+    'moveLineUp': moveLineUp,
+    'moveLineDown': moveLineDown,
 };
 
 var shortcuts = {
@@ -60,6 +62,8 @@ var shortcuts = {
     'togglePreview': 'Cmd-P',
     'toggleSideBySide': 'F9',
     'toggleFullScreen': 'F11',
+    'moveLineUp': 'Cmd-Arrow-Up',
+    'moveLineDown': 'Cmd-Arrow-Down',
 };
 
 var getBindingName = function (f) {
@@ -374,6 +378,72 @@ function toggleFullScreen(editor) {
         }
     }
 }
+
+/**
+ * Added by Pigmalion (msoler75)
+ */
+function moveLineUp (editor) {
+    var cm = editor.codemirror;
+    var ss = cm.somethingSelected();
+    var first = cm.getCursor('start').line;
+    var last = cm.getCursor('end').line;
+    // var numlines = cm.lineCount();
+    if (first > 0) {
+      var tmp = cm.getLine(last);
+      var c1 = cm.getLine(first - 1);
+      var c2 = cm.getRange(
+        { line: first, ch: 0 },
+        { line: last, ch: tmp.length }
+      );
+      cm.replaceRange(
+        c2 + '\n' + c1,
+        { line: first - 1, ch: 0 },
+        { line: last, ch: tmp.length }
+      );
+      cm.setCursor({ line: first - 1 });
+      if (ss) {
+        cm.extendSelection(
+          { line: first - 1, ch: 0 },
+          { line: last - 1, ch: c1.length }
+        );
+      }
+      cm.focus();
+    }
+  }
+  
+
+/**
+ * Added by Pigmalion (msoler75)
+ */
+function moveLineDown (editor) {
+    var cm = editor.codemirror;
+    // var cm = simplemde.codemirror;
+    var ss = cm.somethingSelected();
+    var first = cm.getCursor('start').line;
+    var last = cm.getCursor('end').line;
+    var numlines = cm.lineCount();
+    if (last < numlines - 1) {
+      var tmp = cm.getLine(last);
+      var c1 = cm.getRange(
+        { line: first, ch: 0 },
+        { line: last, ch: tmp.length }
+      );
+      var c2 = cm.getLine(last + 1);
+      cm.replaceRange(
+        c2 + '\n' + c1,
+        { line: first, ch: 0 },
+        { line: last + 1, ch: c2.length }
+      );
+      cm.setCursor({ line: last + 1 });
+      if (ss) {
+        cm.extendSelection(
+          { line: first + 1, ch: 0 },
+          { line: last + 1, ch: c2.length }
+        );
+      }
+      cm.focus();
+    }
+  }
 
 
 /**
@@ -2810,6 +2880,8 @@ EasyMDE.redo = redo;
 EasyMDE.togglePreview = togglePreview;
 EasyMDE.toggleSideBySide = toggleSideBySide;
 EasyMDE.toggleFullScreen = toggleFullScreen;
+EasyMDE.moveLineUp = moveLineUp;
+EasyMDE.moveLineDown = moveLineDown;
 
 /**
  * Bind instance methods for exports.
@@ -2853,11 +2925,11 @@ EasyMDE.prototype.toggleOrderedList = function () {
 EasyMDE.prototype.cleanBlock = function () {
     cleanBlock(this);
 };
-EasyMDE.prototype.drawLink = function () {
-    drawLink(this);
+EasyMDE.prototype.drawLink = function (u) {
+    drawLink(this, u);
 };
-EasyMDE.prototype.drawImage = function () {
-    drawImage(this);
+EasyMDE.prototype.drawImage = function (u) {
+    drawImage(this, u);
 };
 EasyMDE.prototype.drawUploadedImage = function () {
     drawUploadedImage(this);
@@ -2883,6 +2955,13 @@ EasyMDE.prototype.toggleSideBySide = function () {
 EasyMDE.prototype.toggleFullScreen = function () {
     toggleFullScreen(this);
 };
+EasyMDE.prototype.moveLineUp = function () {
+    moveLineUp(this);
+};
+EasyMDE.prototype.moveLineDown = function () {
+    moveLineDown(this);
+};
+
 
 EasyMDE.prototype.isPreviewActive = function () {
     var cm = this.codemirror;
